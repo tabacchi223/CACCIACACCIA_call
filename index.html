@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CACCIA CACCIA - 電話する</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@500;700&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { height: 100%; }
+
+  body {
+    min-height: 100vh;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Zen Kaku Gothic New', sans-serif;
+    padding: 48px 24px;
+    overflow: hidden;
+  }
+
+  .slideshow {
+    position: fixed;
+    inset: 0;
+    z-index: -2;
+  }
+
+  .slideshow img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+    opacity: 0;
+    transition: opacity 1.2s ease-in-out;
+  }
+
+  .slideshow img.active { opacity: 1; }
+
+  .bg-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    background: linear-gradient(180deg, rgba(10,6,4,0.42) 0%, rgba(10,6,4,0.55) 50%, rgba(10,6,4,0.82) 100%);
+  }
+
+  .card {
+    width: 100%;
+    max-width: 360px;
+    text-align: center;
+  }
+
+  .logo {
+    width: 168px;
+    margin: 0 auto 22px;
+    filter: drop-shadow(0 3px 10px rgba(0,0,0,0.5));
+  }
+
+  .logo img {
+    width: 100%;
+    height: auto;
+    display: block;
+  }
+
+  .reservation-label {
+    font-size: 11px;
+    letter-spacing: 0.25em;
+    color: #e3b272;
+    margin-bottom: 6px;
+    font-weight: 500;
+    text-transform: uppercase;
+  }
+
+  .shop-name {
+    font-family: 'Shippori Mincho', serif;
+    font-size: 22px;
+    font-weight: 700;
+    color: #fdf8f2;
+    margin-bottom: 4px;
+    white-space: nowrap;
+    text-shadow: 0 2px 10px rgba(0,0,0,0.5);
+  }
+
+  .reservation-sub {
+    font-size: 13px;
+    color: rgba(255,255,255,0.7);
+    margin-bottom: 24px;
+    letter-spacing: 0.05em;
+  }
+
+  .hours {
+    margin-bottom: 24px;
+    padding: 0 4px;
+  }
+
+  .hours-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 5px 0;
+  }
+
+  .hours-divider {
+    height: 1px;
+    background: rgba(255,255,255,0.12);
+    margin: 2px 0;
+  }
+
+  .hours-day {
+    font-size: 11px;
+    letter-spacing: 0.15em;
+    color: rgba(255,255,255,0.5);
+    font-weight: 400;
+    text-transform: uppercase;
+  }
+
+  .hours-time {
+    font-family: 'Shippori Mincho', serif;
+    font-size: 13px;
+    color: #fdf8f2;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+  }
+
+  .call-button {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    text-decoration: none;
+    background: linear-gradient(135deg, #c98a4b, #a85c2e);
+    color: #fff;
+    padding: 26px 24px;
+    border-radius: 18px;
+    box-shadow: 0 12px 30px rgba(0,0,0,0.4);
+    transition: transform 0.2s ease;
+    margin-bottom: 20px;
+  }
+
+  .call-button:active { transform: scale(0.97); }
+
+  .icon { width: 26px; height: 26px; }
+
+  .call-text {
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+  }
+
+  .number {
+    font-family: 'Shippori Mincho', serif;
+    font-size: 24px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+  }
+
+  .tagline {
+    font-size: 11px;
+    color: rgba(255,255,255,0.4);
+    letter-spacing: 0.06em;
+    line-height: 1.9;
+    margin-top: 14px;
+  }
+
+  .dots {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 6px;
+    z-index: 10;
+  }
+
+  .dot {
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.3);
+    transition: background 0.4s;
+  }
+
+  .dot.active { background: rgba(255,255,255,0.85); }
+
+  .status-bar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    margin-bottom: 20px;
+  }
+
+  .status-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  .status-text {
+    font-size: 12px;
+    letter-spacing: 0.1em;
+    font-weight: 500;
+  }
+
+  .status-open .status-dot { background: #4cd964; box-shadow: 0 0 6px rgba(76,217,100,0.6); }
+  .status-open .status-text { color: #4cd964; }
+  .status-closed .status-dot { background: #ff5a5a; box-shadow: 0 0 6px rgba(255,90,90,0.6); }
+  .status-closed .status-text { color: #ff5a5a; }
+
+  .bottom-icons {
+    display: flex;
+    justify-content: center;
+    gap: 16px;
+    margin-top: 16px;
+  }
+
+  .icon-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    text-decoration: none;
+    color: rgba(255,255,255,0.55);
+    font-size: 10px;
+    letter-spacing: 0.08em;
+    transition: color 0.2s;
+  }
+
+  .icon-btn:active { color: rgba(255,255,255,0.9); }
+
+  .icon-btn svg {
+    width: 22px;
+    height: 22px;
+  }
+
+</style>
+</head>
+<body>
+  <div class="slideshow">
